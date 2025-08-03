@@ -1,12 +1,14 @@
-import packages 
 import streamlit as st
 from PIL import Image
 import os
+os.environ["TRANSFORMERS_NO_TF"] = "1"
 import torch
 from transformers import CLIPModel, CLIPProcessor
-import chromadb
+from chromadb import PersistentClient
 from chromadb.config import Settings
 import numpy as np
+from config import persist_dir
+
 
 
 # Load model
@@ -19,11 +21,13 @@ def load_model():
 
 model, processor = load_model()
 
-# ChromaDB
-chroma_client = chromadb.Client(Settings(persist_directory="chroma_storage", anonymized_telemetry=False))
+# ChromaDB setup
+chroma_client = PersistentClient(path=persist_dir)
 collection = chroma_client.get_or_create_collection("product_images", embedding_function=None)
 
-# Embedding helpers
+print("Collection count:", collection.count())
+
+# Embedding functions
 def embed_image(image):
     inputs = processor(images=image, return_tensors="pt")
     with torch.no_grad():
@@ -42,7 +46,7 @@ def embed_text(text):
 st.markdown(
     """
     <div style="display:inline-flex; align-items:center; gap: 12px; font-size: 2.2rem; font-weight: 700;">
-        <span>🔍</span>
+        <span> </span>
         <span>Multimodal Search: Text & Image</span>
     </div>
     """,
@@ -53,15 +57,28 @@ st.markdown(
 
 search_type = st.radio("Choose search type:", ["Text", "Image"])
 
+
+# Search: Text
 if search_type == "Text":
     query = st.text_input("Enter your text query:")
     if query:
         query_vector = embed_text(query)
         results = collection.query(query_embeddings=[query_vector], n_results=3, include=["metadatas"])
-        st.subheader("Results:")
-        for r in results["metadatas"][0]:
-            st.image(f"./image/{r['file_name']}", caption=r['file_name'], width=250)
 
+        st.subheader("Results:")
+        if not results["metadatas"] or not results["metadatas"][0]:
+            st.write("No results found.")
+        else:
+            for r in results["metadatas"][0]:
+                file = r.get('file_name', '')
+                name = r.get('product_name', 'Unknown Product')
+                url = r.get('product_url', '#')
+                st.markdown(f"**{name}**")
+                st.markdown(f"[View on Amazon]({url})", unsafe_allow_html=True)
+                st.markdown("---")
+
+
+# Search: Image
 elif search_type == "Image":
     uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_file:
@@ -69,7 +86,15 @@ elif search_type == "Image":
         st.image(img, caption="Uploaded Image", width=250)
         image_vector = embed_image(img)
         results = collection.query(query_embeddings=[image_vector], n_results=3, include=["metadatas"])
+
         st.subheader("Results:")
         for r in results["metadatas"][0]:
-            st.image(f"./image/{r['file_name']}", caption=r['file_name'], width=250)
+            file = r.get('file_name', '')
+            name = r.get('product_name', 'Unknown Product')
+            url = r.get('product_url', '#')
+            st.markdown(f"**{name}**")
+            st.markdown(f"[View on Amazon]({url})", unsafe_allow_html=True)
+            st.markdown("---")
+
+
 
