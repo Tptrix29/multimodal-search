@@ -2,7 +2,7 @@
 
 ## Run the Project
 ```
-git clone 
+git clone https://github.com/Tptrix29/multimodal-search
 cd multimodal-search
 conda create -n multimodal python=3.10 -y
 pip install -r requirements.txt
