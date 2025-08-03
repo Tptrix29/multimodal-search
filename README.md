@@ -4,6 +4,7 @@
 ```
 # clone repo
 git clone https://github.com/Tptrix29/multimodal-search
+git checkout pei-workflow
 cd multimodal-search
 # create env
 conda create -n multimodal python=3.10 -y
