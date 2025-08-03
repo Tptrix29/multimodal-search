@@ -2,10 +2,15 @@
 
 ## Run the Project
 ```
+# clone repo
 git clone https://github.com/Tptrix29/multimodal-search
 cd multimodal-search
+# create env
 conda create -n multimodal python=3.10 -y
 pip install -r requirements.txt
+# IMPORTANT: download amazon product dataset
+python init_db.py
+# run website
 streamlit run app.py
 ```
 

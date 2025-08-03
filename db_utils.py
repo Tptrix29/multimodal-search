@@ -69,3 +69,4 @@ class VectorDBManager:
     
     def rearrange_results(self):
         pass
+
