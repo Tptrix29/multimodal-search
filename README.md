@@ -1,5 +1,14 @@
 # multimodal-search
 
+## Run the Project
+```
+git clone 
+cd multimodal-search
+conda create -n multimodal python=3.10 -y
+pip install -r requirements.txt
+streamlit run app.py
+```
+
 ## Introduction
 
 This project implements a multi-modal search system that allows users to query using either text or images to retrieve relevant product results based on semantic similarity. Using **CLIP**, a model that maps both text and images into a shared embedding space, we compute cosine similarity between query and dataset embeddings for retrieval.
